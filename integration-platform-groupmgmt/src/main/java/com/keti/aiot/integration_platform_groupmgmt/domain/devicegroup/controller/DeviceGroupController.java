@@ -32,7 +32,7 @@ public class DeviceGroupController {
     @Operation(summary = "단말 그룹 등록")
     @PostMapping
     public ResponseEntity<DeviceGroup> create(@RequestBody DeviceGroupRequestDto dto) {
-        return ResponseEntity.ok(deviceGroupService.create(dto));
+            return ResponseEntity.ok(deviceGroupService.create(dto));
     }
 
     @Operation(summary = "단말 그룹 수정")
