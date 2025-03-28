@@ -18,6 +18,9 @@ repositories {
 }
 
 dependencies {
+	// jeckson이 date 이해
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
 	// Spring Boot Web (RESTful API)
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 
