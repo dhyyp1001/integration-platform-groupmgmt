@@ -1,11 +1,13 @@
 package com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "device_group")
@@ -37,4 +39,8 @@ public class DeviceGroup {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "deviceGroup", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference //부모에서 자식은 직렬화
+    private List<DeviceGroupMember> members;
 }

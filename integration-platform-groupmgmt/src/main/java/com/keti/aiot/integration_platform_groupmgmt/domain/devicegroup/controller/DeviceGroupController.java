@@ -1,50 +1,56 @@
 package com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.controller;
 
-import com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.dto.DeviceGroupRequestDto;
+import com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.dto.*;
 import com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.entity.DeviceGroup;
 import com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.service.DeviceGroupService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/device-groups")
 @RequiredArgsConstructor
+@Tag(name = "DeviceGroup", description = "단말 그룹 API")
 public class DeviceGroupController {
 
     private final DeviceGroupService deviceGroupService;
 
-    @Operation(summary = "단말 그룹 전체 조회")
-    @GetMapping
-    public ResponseEntity<List<DeviceGroup>> findAll() {
-        return ResponseEntity.ok(deviceGroupService.findAll());
-    }
-
-    @Operation(summary = "단말 그룹 단건 조회")
-    @GetMapping("/{id}")
-    public ResponseEntity<DeviceGroup> findById(@PathVariable Long id) {
-        return ResponseEntity.ok(deviceGroupService.findById(id));
-    }
-
-    @Operation(summary = "단말 그룹 등록")
     @PostMapping
-    public ResponseEntity<DeviceGroup> create(@RequestBody DeviceGroupRequestDto dto) {
-            return ResponseEntity.ok(deviceGroupService.create(dto));
+    @Operation(summary = "단말 그룹 생성")
+    public ResponseEntity<Long> create(@Validated @RequestBody DeviceGroupCreateRequestDto request) {
+        return ResponseEntity.ok(deviceGroupService.create(request));
     }
 
+    @PutMapping("/{groupId}")
     @Operation(summary = "단말 그룹 수정")
-    @PutMapping("/{id}")
-    public ResponseEntity<DeviceGroup> update(@PathVariable Long id, @RequestBody DeviceGroupRequestDto dto) {
-        return ResponseEntity.ok(deviceGroupService.update(id, dto));
+    public ResponseEntity<Void> update(@PathVariable Long groupId,
+                                       @Validated @RequestBody DeviceGroupUpdateRequestDto request) {
+        deviceGroupService.update(groupId, request);
+        return ResponseEntity.ok().build();
     }
 
+    @DeleteMapping("/{groupId}")
     @Operation(summary = "단말 그룹 삭제")
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        deviceGroupService.delete(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> delete(@PathVariable Long groupId) {
+        deviceGroupService.delete(groupId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{groupId}")
+    @Operation(summary = "단말 그룹 상세 조회")
+    public ResponseEntity<DeviceGroupResponseDto> findById(@PathVariable Long groupId) {
+        return ResponseEntity.ok(deviceGroupService.findById(groupId));
+    }
+
+    @GetMapping
+    @Operation(summary = "단말 그룹 목록 조회")
+    public ResponseEntity<Page<DeviceGroup>> findAll(@ParameterObject Pageable pageable) {
+        return ResponseEntity.ok(deviceGroupService.findAll(pageable));
     }
 }

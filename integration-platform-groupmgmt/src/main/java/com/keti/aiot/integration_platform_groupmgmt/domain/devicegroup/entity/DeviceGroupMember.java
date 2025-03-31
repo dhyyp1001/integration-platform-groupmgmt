@@ -1,5 +1,6 @@
 package com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -21,6 +22,7 @@ public class DeviceGroupMember {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = false)
+    @JsonBackReference //자식에서 부모는 직렬화 불가
     private DeviceGroup deviceGroup;
 
     @Column(name = "type", nullable = false, length = 20)

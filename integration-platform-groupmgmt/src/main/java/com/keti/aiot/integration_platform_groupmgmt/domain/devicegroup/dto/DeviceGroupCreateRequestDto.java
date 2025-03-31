@@ -21,9 +21,6 @@ public class DeviceGroupCreateRequestDto {
     @NotBlank
     private String status;
 
-    @NotBlank
-    private String createdBy;
-
     @NotEmpty
     private List<String> deviceIds; // dev_id 또는 nc_id (type 기반 매핑)
 }

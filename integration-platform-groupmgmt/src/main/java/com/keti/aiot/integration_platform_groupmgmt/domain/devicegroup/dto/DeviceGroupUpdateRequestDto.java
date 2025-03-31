@@ -21,9 +21,6 @@ public class DeviceGroupUpdateRequestDto {
     @NotBlank
     private String status;
 
-    @NotBlank
-    private String updatedBy;
-
     @NotEmpty
     private List<String> deviceIds;
 }

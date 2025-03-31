@@ -15,8 +15,6 @@ public class DeviceGroupResponseDto {
     private String groupName;
     private String description;
     private String status;
-    private String createdBy;
-    private String updatedBy;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<DeviceInfoResponseDto> devices;
