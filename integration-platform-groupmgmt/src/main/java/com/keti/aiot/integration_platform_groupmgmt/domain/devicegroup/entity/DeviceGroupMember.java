@@ -38,10 +38,10 @@ public class DeviceGroupMember {
 
     // 디바이스 정보 연동 (읽기 전용)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "nc_id", referencedColumnName = "nc_id", insertable = false, updatable = false)
+    @JoinColumn(name = "nc_id", referencedColumnName = "nc_id", insertable = false, updatable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Device deviceByNcId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dev_id", referencedColumnName = "dev_id", insertable = false, updatable = false)
+    @JoinColumn(name = "dev_id", referencedColumnName = "dev_id", insertable = false, updatable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Device deviceByDevId;
 }
