@@ -2,16 +2,15 @@ package com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.dto;
 
 import lombok.*;
 
+@Builder
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class DeviceInfoResponseDto {
-    private String deviceId;       // dev_id or nc_id
-    private String deviceName;     // ex) description
-    private String deviceType;     // optional (if applicable)
-    private String entityModel;    // optional (if applicable)
-    private String location;       // optional (if applicable)
-    //private String status;         // ex) ONLINE / OFFLINE
+    private String type;
+    private String devId;
+    private String ncId;
+    private String devEui;
+    private String description;
 }

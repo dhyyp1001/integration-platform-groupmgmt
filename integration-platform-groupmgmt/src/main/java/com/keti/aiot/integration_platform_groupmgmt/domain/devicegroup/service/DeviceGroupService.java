@@ -103,8 +103,24 @@ public class DeviceGroupService {
     }
 
     @Transactional(readOnly = true)
-    public Page<DeviceGroup> findAll(Pageable pageable) {
-        return deviceGroupRepository.findAll(pageable);
+    public Page<DeviceGroupResponseDto> findAll(Pageable pageable) {// json 평탄화 진행
+        return deviceGroupRepository.findAll(pageable)
+                .map(group -> {
+                    List<DeviceGroupMember> members = memberRepository.findByDeviceGroup_GroupId(group.getGroupId());
+
+                    List<DeviceInfoResponseDto> devices = members.stream()
+                            .map(this::mapToDeviceInfo)
+                            .collect(Collectors.toList());
+
+                    return DeviceGroupResponseDto.builder()
+                            .groupId(group.getGroupId())
+                            .groupName(group.getGroupName())
+                            .description(group.getDescription())
+                            .createdAt(group.getCreatedAt())
+                            .updatedAt(group.getUpdatedAt())
+                            .devices(devices)
+                            .build();
+                });
     }
 
     private DeviceGroupMember buildMember(DeviceGroup group, String deviceId) {
@@ -129,17 +145,25 @@ public class DeviceGroupService {
     }
 
     private DeviceInfoResponseDto mapToDeviceInfo(DeviceGroupMember member) {
-        String deviceId = member.getType().equals("device") ? member.getNcId() : member.getDevId();
-        String deviceName = member.getType().equals("device")
-                ? Optional.ofNullable(member.getDeviceByNcId()).map(Device::getDescription).orElse("")
-                : Optional.ofNullable(member.getDeviceByDevId()).map(Device::getDescription).orElse("");
-
-        return DeviceInfoResponseDto.builder()
-                .deviceId(deviceId)
-                .deviceName(deviceName)
-                .deviceType(member.getType())
-                //.status("UNKNOWN")
-                .build();
+        if ("device".equals(member.getType())) {
+            Device device = member.getDeviceByNcId();
+            return DeviceInfoResponseDto.builder()
+                    .type("device")
+                    .devId(null)
+                    .ncId(member.getNcId())
+                    .devEui(device != null ? device.getDevEui() : null)
+                    .description(device != null ? device.getDescription() : null)
+                    .build();
+        } else {
+            Device device = member.getDeviceByDevId();
+            return DeviceInfoResponseDto.builder()
+                    .type("edge-device")
+                    .devId(member.getDevId())
+                    .ncId(null)//device != null ? device.getNcId() : null)// 수정 필요 시 적용
+                    .devEui(device != null ? device.getDevEui() : null)
+                    .description(device != null ? device.getDescription() : null)
+                    .build();
+        }
     }
 
     private void sendKafka(String eventType, DeviceGroup group) {

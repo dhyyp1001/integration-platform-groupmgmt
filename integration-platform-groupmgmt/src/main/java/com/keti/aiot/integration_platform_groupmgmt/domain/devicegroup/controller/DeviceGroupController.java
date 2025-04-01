@@ -49,8 +49,8 @@ public class DeviceGroupController {
     }
 
     @GetMapping
-    @Operation(summary = "단말 그룹 목록 조회")
-    public ResponseEntity<Page<DeviceGroup>> findAll(@ParameterObject Pageable pageable) {
+    @Operation(summary = "단말 그룹 목록 조회")// 평탄화 완료
+    public ResponseEntity<Page<DeviceGroupResponseDto>> findAll(@ParameterObject Pageable pageable) {
         return ResponseEntity.ok(deviceGroupService.findAll(pageable));
     }
 }
