@@ -36,7 +36,7 @@ public class DeviceGroupService {
         DeviceGroup group = DeviceGroup.builder()
                 .groupName(request.getGroupName())
                 .description(request.getDescription())
-                .status(request.getStatus())
+                //.status(request.getStatus())
                 .build();
 
         deviceGroupRepository.save(group);
@@ -58,7 +58,7 @@ public class DeviceGroupService {
 
         group.setGroupName(request.getGroupName());
         group.setDescription(request.getDescription());
-        group.setStatus(request.getStatus());
+        //group.setStatus(request.getStatus());
 
         memberRepository.deleteByGroupId(groupId);
 
@@ -95,7 +95,7 @@ public class DeviceGroupService {
                 .groupId(group.getGroupId())
                 .groupName(group.getGroupName())
                 .description(group.getDescription())
-                .status(group.getStatus())
+                //.status(group.getStatus())
                 .createdAt(group.getCreatedAt())
                 .updatedAt(group.getUpdatedAt())
                 .devices(devices)
@@ -138,7 +138,7 @@ public class DeviceGroupService {
                 .deviceId(deviceId)
                 .deviceName(deviceName)
                 .deviceType(member.getType())
-                .status("UNKNOWN")
+                //.status("UNKNOWN")
                 .build();
     }
 

@@ -13,5 +13,5 @@ public class DeviceInfoResponseDto {
     private String deviceType;     // optional (if applicable)
     private String entityModel;    // optional (if applicable)
     private String location;       // optional (if applicable)
-    private String status;         // ex) ONLINE / OFFLINE
+    //private String status;         // ex) ONLINE / OFFLINE
 }

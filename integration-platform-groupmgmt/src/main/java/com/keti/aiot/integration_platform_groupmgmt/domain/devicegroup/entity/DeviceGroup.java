@@ -29,8 +29,8 @@ public class DeviceGroup {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(length = 20)
-    private String status;
+    //@Column(length = 20)
+    //private String status;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

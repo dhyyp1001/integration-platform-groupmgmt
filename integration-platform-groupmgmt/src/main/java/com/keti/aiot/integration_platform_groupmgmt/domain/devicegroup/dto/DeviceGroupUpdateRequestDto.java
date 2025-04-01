@@ -18,8 +18,8 @@ public class DeviceGroupUpdateRequestDto {
 
     private String description;
 
-    @NotBlank
-    private String status;
+    //@NotBlank
+    //private String status;
 
     @NotEmpty
     private List<String> deviceIds;

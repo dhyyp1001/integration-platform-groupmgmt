@@ -10,5 +10,5 @@ import lombok.*;
 public class DeviceGroupRequestDto {
     private String groupName;
     private String description;
-    private String status;
+    //private String status;
 }
