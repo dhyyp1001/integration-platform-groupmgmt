@@ -12,10 +12,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -29,7 +33,7 @@ public class DeviceGroupService {
     private final DeviceRepository deviceRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    private static final String TOPIC = "device-group-events";
+    private static final String TOPIC = "aiot.network.management.device-group";
 
     @Transactional
     public Long create(DeviceGroupCreateRequestDto request) {
@@ -80,6 +84,13 @@ public class DeviceGroupService {
         deviceGroupRepository.delete(group);
 
         sendKafka("DELETE", group);
+    }
+
+    @Transactional
+    public void deleteAll(List<Long> groupIds) {
+        for (Long groupId : groupIds) {
+            delete(groupId); // 기존 단일 삭제 로직 재사용
+        }
     }
 
     @Transactional(readOnly = true)
@@ -167,7 +178,26 @@ public class DeviceGroupService {
     }
 
     private void sendKafka(String eventType, DeviceGroup group) {
-        kafkaTemplate.send(TOPIC, eventType + ":" + group.getGroupId());
-        log.info("[Kafka] {} 이벤트 전송 완료 - groupId: {}", eventType, group.getGroupId());
+        List<DeviceGroupMember> members = memberRepository.findByDeviceGroup_GroupId(group.getGroupId());
+        List<DeviceInfoResponseDto> devices = members.stream()
+                .map(this::mapToDeviceInfo)
+                .collect(Collectors.toList());
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("groupId", group.getGroupId());
+        payload.put("groupName", group.getGroupName());
+        payload.put("description", group.getDescription());
+        payload.put("createdAt", group.getCreatedAt());
+        payload.put("updatedAt", group.getUpdatedAt());
+        payload.put("members", devices);
+
+        kafkaTemplate.send(
+                MessageBuilder.withPayload(payload)
+                        .setHeader(KafkaHeaders.TOPIC, TOPIC)
+                        .setHeader("eventType", eventType)
+                        .build()
+        );
+
+        log.info("[Kafka] {} 메시지 전송 완료 - groupId={}, members={}개", eventType, group.getGroupId(), devices.size());
     }
 }

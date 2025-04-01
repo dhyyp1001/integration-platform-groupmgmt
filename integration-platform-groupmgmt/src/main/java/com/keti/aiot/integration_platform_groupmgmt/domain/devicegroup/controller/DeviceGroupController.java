@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/device-groups")
 @RequiredArgsConstructor
@@ -39,6 +41,13 @@ public class DeviceGroupController {
     @Operation(summary = "단말 그룹 삭제")
     public ResponseEntity<Void> delete(@PathVariable Long groupId) {
         deviceGroupService.delete(groupId);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping
+    @Operation(summary = "다중 단말 그룹 삭제")
+    public ResponseEntity<Void> deleteMultiple(@RequestBody List<Long> groupIds) {
+        deviceGroupService.deleteAll(groupIds);
         return ResponseEntity.ok().build();
     }
 
