@@ -8,6 +8,7 @@ import com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.filter.De
 import com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.repository.DeviceGroupMemberRepository;
 import com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.repository.DeviceGroupRepository;
 import com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.repository.DeviceRepository;
+import com.keti.aiot.integration_platform_groupmgmt.global.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -37,10 +38,19 @@ public class DeviceGroupService {
     private static final String TOPIC = "aiot.network.management.device-group";
 
     @Transactional
-    public Long create(DeviceGroupCreateRequestDto request) {
+    public String create(DeviceGroupCreateRequestDto request) {
+
+        // 가장 마지막 번호 가져오기
+        Integer lastNumber = deviceGroupRepository.findMaxGroupIdNumber();
+        int nextNumber = (lastNumber == null) ? 1 : lastNumber + 1;
+
+        // 숫자를 세 자리 문자열로 포맷팅
+        String nextGroupId = String.format("grp%03d", nextNumber);
+
         DeviceGroup group = DeviceGroup.builder()
                 .groupName(request.getGroupName())
                 .description(request.getDescription())
+                .groupId(nextGroupId)
                 //.status(request.getStatus())
                 .build();
 
@@ -57,15 +67,15 @@ public class DeviceGroupService {
     }
 
     @Transactional
-    public void update(Long groupId, DeviceGroupUpdateRequestDto request) {
-        DeviceGroup group = deviceGroupRepository.findById(groupId)
-                .orElseThrow(() -> new IllegalArgumentException("그룹을 찾을 수 없습니다."));
+    public void update(Long dgpId, DeviceGroupUpdateRequestDto request) {
+        DeviceGroup group = deviceGroupRepository.findById(dgpId)
+                .orElseThrow(() -> new NotFoundException("해당 ID의 단말 그룹이 존재하지 않습니다."));
 
         group.setGroupName(request.getGroupName());
         group.setDescription(request.getDescription());
         //group.setStatus(request.getStatus());
 
-        memberRepository.deleteByGroupId(groupId);
+        memberRepository.deleteByDgpId(dgpId);
 
         List<DeviceGroupMember> newMembers = request.getDeviceIds().stream()
                 .map(id -> buildMember(group, id))
@@ -77,38 +87,38 @@ public class DeviceGroupService {
     }
 
     @Transactional
-    public void delete(Long groupId) {
-        DeviceGroup group = deviceGroupRepository.findById(groupId)
-                .orElseThrow(() -> new IllegalArgumentException("그룹을 찾을 수 없습니다."));
+    public void delete(Long dgpId) {
+        DeviceGroup group = deviceGroupRepository.findById(dgpId)
+                .orElseThrow(() -> new NotFoundException("해당 ID의 단말 그룹이 존재하지 않습니다."));
 
-        memberRepository.deleteByGroupId(groupId);
+        memberRepository.deleteByDgpId(dgpId);
         deviceGroupRepository.delete(group);
 
         sendKafka("DELETE", group);
     }
 
     @Transactional
-    public void deleteAll(List<Long> groupIds) {
+    public void deleteAll(List<Long> dgpIds) {
 
-        for (Long groupId : groupIds) {
-            DeviceGroup group = deviceGroupRepository.findById(groupId)
-                    .orElseThrow(() -> new IllegalArgumentException("그룹을 찾을 수 없습니다."));
-            delete(groupId); // 기존 단일 삭제 로직 재사용
+        for (Long dgpId : dgpIds) {
+            DeviceGroup group = deviceGroupRepository.findById(dgpId)
+                    .orElseThrow(() -> new NotFoundException("존재하지 않는 단말 그룹이 있습니다."));
+            delete(dgpId); // 기존 단일 삭제 로직 재사용
             sendKafka("DELETE",group );
         }
     }
 
     @Transactional(readOnly = true)
-    public DeviceGroupResponseDto findById(Long groupId) {
-        DeviceGroup group = deviceGroupRepository.findById(groupId)
-                .orElseThrow(() -> new IllegalArgumentException("그룹을 찾을 수 없습니다."));
+    public DeviceGroupResponseDto findById(Long dgpId) {
+        DeviceGroup group = deviceGroupRepository.findById(dgpId)
+                .orElseThrow(() -> new NotFoundException("해당 ID의 단말 그룹이 존재하지 않습니다."));
 
         List<DeviceInfoResponseDto> devices = group.getMembers().stream()
                 .map(this::mapToDeviceInfo)
                 .collect(Collectors.toList());
 
         return DeviceGroupResponseDto.builder()
-                .groupId(group.getGroupId())
+                .dgpId(group.getDgpId())
                 .groupName(group.getGroupName())
                 .description(group.getDescription())
                 //.status(group.getStatus())
@@ -122,14 +132,14 @@ public class DeviceGroupService {
     public Page<DeviceGroupResponseDto> findAll(Pageable pageable) {// json 평탄화 진행
         return deviceGroupRepository.findAll(pageable)
                 .map(group -> {
-                    List<DeviceGroupMember> members = memberRepository.findByDeviceGroup_GroupId(group.getGroupId());
+                    List<DeviceGroupMember> members = memberRepository.findByDeviceGroup_DgpId(group.getDgpId());
 
                     List<DeviceInfoResponseDto> devices = members.stream()
                             .map(this::mapToDeviceInfo)
                             .collect(Collectors.toList());
 
                     return DeviceGroupResponseDto.builder()
-                            .groupId(group.getGroupId())
+                            .dgpId(group.getDgpId())
                             .groupName(group.getGroupName())
                             .description(group.getDescription())
                             .createdAt(group.getCreatedAt())
@@ -145,29 +155,24 @@ public class DeviceGroupService {
 
         switch (filter) {
             case groupId -> {
-                try {
-                    Long groupId = Long.parseLong(keyword); // 완전 일치
-                    result = deviceGroupRepository.findByGroupId(groupId, pageable);
-                } catch (NumberFormatException e) {
-                    throw new IllegalArgumentException("[SEARCH] groupId는 숫자여야 합니다.");
-                }
+                result = deviceGroupRepository.findByGroupIdContainingIgnoreCase(keyword, pageable);
             }
 
             case groupName -> {
                 result = deviceGroupRepository.findByGroupNameContainingIgnoreCase(keyword, pageable); // like
             }
 
-            default -> throw new IllegalArgumentException("[SEARCH] 지원하지 않는 필터입니다.");
+            default -> throw new NotFoundException("[SEARCH] 지원하지 않는 필터입니다.");
         }
 
         return result.map(group -> {
-            List<DeviceInfoResponseDto> devices = memberRepository.findByDeviceGroup_GroupId(group.getGroupId())
+            List<DeviceInfoResponseDto> devices = memberRepository.findByDeviceGroup_DgpId(group.getDgpId())
                     .stream()
                     .map(this::mapToDeviceInfo)
                     .toList();
 
             return DeviceGroupResponseDto.builder()
-                    .groupId(group.getGroupId())
+                    .dgpId(group.getDgpId())
                     .groupName(group.getGroupName())
                     .description(group.getDescription())
                     .createdAt(group.getCreatedAt())
@@ -190,7 +195,7 @@ public class DeviceGroupService {
         }
 
         Device ncDevice = deviceRepository.findByNcId(deviceId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 단말입니다."));
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 단말입니다."));
 
         return DeviceGroupMember.builder()
                 .deviceGroup(group)
@@ -224,13 +229,13 @@ public class DeviceGroupService {
     private void sendKafka(String eventType, DeviceGroup group) {
 
         try{
-            List<DeviceGroupMember> members = memberRepository.findByDeviceGroup_GroupId(group.getGroupId());
+            List<DeviceGroupMember> members = memberRepository.findByDeviceGroup_DgpId(group.getDgpId());
             List<DeviceInfoResponseDto> devices = members.stream()
                     .map(this::mapToDeviceInfo)
                     .collect(Collectors.toList());
 
             Map<String, Object> payload = new HashMap<>();
-            payload.put("groupId", group.getGroupId());
+            payload.put("dgpId", group.getDgpId());
             payload.put("groupName", group.getGroupName());
             payload.put("description", group.getDescription());
             payload.put("createdAt", group.getCreatedAt());
@@ -244,10 +249,13 @@ public class DeviceGroupService {
                             .build()
             );
 
-            log.info("[Kafka] {} 메시지 전송 완료 - groupId={}, members={}개", eventType, group.getGroupId(), devices.size());
+            log.info("[Kafka] {} 메시지 전송 완료 - dgpId={}, members={}개", eventType, group.getDgpId(), devices.size());
         } catch (IllegalArgumentException e) {
-            log.warn("[Kafka Send Skipped] IllegalArgumentException 발생. groupId={}, message={}",
-                    group != null ? group.getGroupId() : "null", e.getMessage());
+            log.warn("[Kafka Send Skipped] IllegalArgumentException 발생. dgpId={}, message={}",
+                    group != null ? group.getDgpId() : "null", e.getMessage());
+        } catch (NotFoundException e){
+            log.warn("[Kafka Send Skipped] NotFoundException 발생. dgpId={}, message={}",
+                    group != null ? group.getDgpId() : "null", e.getMessage());
         }
     }
 }

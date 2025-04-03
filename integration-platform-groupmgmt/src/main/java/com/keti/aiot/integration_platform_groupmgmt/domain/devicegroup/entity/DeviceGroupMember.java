@@ -21,7 +21,7 @@ public class DeviceGroupMember {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_id", nullable = false)
+    @JoinColumn(name = "dgpId", nullable = false)
     @JsonBackReference //자식에서 부모는 직렬화 불가
     private DeviceGroup deviceGroup;
 

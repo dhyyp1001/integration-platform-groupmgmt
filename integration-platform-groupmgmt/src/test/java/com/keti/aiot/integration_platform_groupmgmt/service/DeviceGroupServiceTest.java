@@ -37,7 +37,6 @@ class DeviceGroupServiceTest {
         DeviceGroupCreateRequestDto dto = DeviceGroupCreateRequestDto.builder()
                 .groupName("Test Group")
                 .description("test group")
-                .status("ACTIVE")
                 .deviceIds(List.of("NC001", "EDG001"))
                 .build();
     }

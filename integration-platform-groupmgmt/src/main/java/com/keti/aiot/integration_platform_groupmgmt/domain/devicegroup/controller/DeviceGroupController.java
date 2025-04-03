@@ -25,46 +25,46 @@ public class DeviceGroupController {
 
     @PostMapping
     @Operation(summary = "단말 그룹 생성")
-    public ResponseEntity<Long> create(@Validated @RequestBody DeviceGroupCreateRequestDto request) {
+    public ResponseEntity<String> create(@Validated @RequestBody DeviceGroupCreateRequestDto request) {
         return ResponseEntity.ok(deviceGroupService.create(request));
     }
 
-    @PutMapping("/{groupId}")
+    @PutMapping("/{dgpId}")
     @Operation(summary = "단말 그룹 수정")
-    public ResponseEntity<Void> update(@PathVariable Long groupId,
+    public ResponseEntity<Void> update(@PathVariable Long dgpId,
                                        @Validated @RequestBody DeviceGroupUpdateRequestDto request) {
-        deviceGroupService.update(groupId, request);
+        deviceGroupService.update(dgpId, request);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{groupId}")
+    @DeleteMapping("/{dgpId}")
     @Operation(summary = "단말 그룹 삭제")
-    public ResponseEntity<Void> delete(@PathVariable Long groupId) {
-        deviceGroupService.delete(groupId);
+    public ResponseEntity<Void> delete(@PathVariable Long dgpId) {
+        deviceGroupService.delete(dgpId);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping
     @Operation(summary = "다중 단말 그룹 삭제")
-    public ResponseEntity<Void> deleteMultiple(@RequestBody List<Long> groupIds) {
-        deviceGroupService.deleteAll(groupIds);
+    public ResponseEntity<Void> deleteMultiple(@RequestBody List<Long> dgpId) {
+        deviceGroupService.deleteAll(dgpId);
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/{groupId}")
+    @GetMapping("/{dgpId}")
     @Operation(summary = "단말 그룹 상세 조회")
-    public ResponseEntity<DeviceGroupResponseDto> findById(@PathVariable Long groupId) {
-        return ResponseEntity.ok(deviceGroupService.findById(groupId));
+    public ResponseEntity<DeviceGroupResponseDto> findById(@PathVariable Long dgpId) {
+        return ResponseEntity.ok(deviceGroupService.findById(dgpId));
     }
 
-    @GetMapping
-    @Operation(summary = "단말 그룹 목록 조회")// 평탄화 완료
+    //@GetMapping
+    //@Operation(summary = "단말 그룹 목록 조회")// 평탄화 완료
     public ResponseEntity<Page<DeviceGroupResponseDto>> findAll(@ParameterObject Pageable pageable) {
         return ResponseEntity.ok(deviceGroupService.findAll(pageable));
     }
 
     @GetMapping("/search")
-    @Operation(summary = "단말 그룹 검색")
+    @Operation(summary = "단말 그룹 목록 검색 조회")
     public ResponseEntity<Page<DeviceGroupResponseDto>> searchDeviceGroups(
             @RequestParam DeviceGroupSearchFilter filter,
             @RequestParam String keyword,

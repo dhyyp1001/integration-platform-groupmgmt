@@ -20,10 +20,13 @@ public class DeviceGroup {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "group_id")
-    private Long groupId;
+    @Column(name = "dgp_id")
+    private Long dgpId;
 
-    @Column(name = "group_name", length = 100, nullable = false)
+    @Column(name = "group_id", length = 100, unique = true)
+    private String groupId;
+
+    @Column(name = "group_name", length = 100, nullable = false, unique = true)
     private String groupName;
 
     @Column(columnDefinition = "TEXT")

@@ -33,8 +33,8 @@ dependencies {
 	// Kafka
 	implementation 'org.springframework.kafka:spring-kafka'
 
-	// Swagger (Springdoc OpenAPI)
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+	// Swagger (Springdoc OpenAPI) 2.2.0 -> 2.7.0 스프링 boot 버전과 swagger 호환
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
 
 	// Validation
 	implementation 'org.springframework.boot:spring-boot-starter-validation'

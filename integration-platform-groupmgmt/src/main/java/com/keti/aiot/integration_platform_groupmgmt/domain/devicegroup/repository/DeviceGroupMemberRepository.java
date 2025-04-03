@@ -10,13 +10,13 @@ import java.util.List;
 
 public interface DeviceGroupMemberRepository extends JpaRepository<DeviceGroupMember, Long> {
 
-    List<DeviceGroupMember> findByDeviceGroup_GroupId(Long groupId);
+    List<DeviceGroupMember> findByDeviceGroup_DgpId(Long dgpId);
 
-    boolean existsByDeviceGroup_GroupIdAndNcId(Long groupId, String ncId);
+    boolean existsByDeviceGroup_DgpIdAndNcId(Long dgpId, String ncId);
 
-    boolean existsByDeviceGroup_GroupIdAndDevId(Long groupId, String devId);
+    boolean existsByDeviceGroup_DgpIdAndDevId(Long dgpId, String devId);
 
     @Modifying
-    @Query("DELETE FROM DeviceGroupMember m WHERE m.deviceGroup.groupId = :groupId")
-    void deleteByGroupId(@Param("groupId") Long groupId);
+    @Query("DELETE FROM DeviceGroupMember m WHERE m.deviceGroup.dgpId = :dgpId")
+    void deleteByDgpId(@Param("dgpId") Long dgpId);
 }
