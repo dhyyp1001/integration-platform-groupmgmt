@@ -4,6 +4,7 @@ import com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.dto.*;
 import com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.entity.Device;
 import com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.entity.DeviceGroup;
 import com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.entity.DeviceGroupMember;
+import com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.filter.DeviceGroupSearchFilter;
 import com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.repository.DeviceGroupMemberRepository;
 import com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.repository.DeviceGroupRepository;
 import com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.repository.DeviceRepository;
@@ -134,6 +135,45 @@ public class DeviceGroupService {
                 });
     }
 
+    @Transactional(readOnly = true)
+    public Page<DeviceGroupResponseDto> searchDeviceGroups(DeviceGroupSearchFilter filter, String keyword, Pageable pageable) {
+        Page<DeviceGroup> result;
+
+        switch (filter) {
+            case groupId -> {
+                try {
+                    Long groupId = Long.parseLong(keyword); // 완전 일치
+                    result = deviceGroupRepository.findByGroupId(groupId, pageable);
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("[SEARCH] groupId는 숫자여야 합니다.");
+                }
+            }
+
+            case groupName -> {
+                result = deviceGroupRepository.findByGroupNameContainingIgnoreCase(keyword, pageable); // like
+            }
+
+            default -> throw new IllegalArgumentException("[SEARCH] 지원하지 않는 필터입니다.");
+        }
+
+        return result.map(group -> {
+            List<DeviceInfoResponseDto> devices = memberRepository.findByDeviceGroup_GroupId(group.getGroupId())
+                    .stream()
+                    .map(this::mapToDeviceInfo)
+                    .toList();
+
+            return DeviceGroupResponseDto.builder()
+                    .groupId(group.getGroupId())
+                    .groupName(group.getGroupName())
+                    .description(group.getDescription())
+                    .createdAt(group.getCreatedAt())
+                    .updatedAt(group.getUpdatedAt())
+                    .devices(devices)
+                    .build();
+        });
+    }
+
+
     private DeviceGroupMember buildMember(DeviceGroup group, String deviceId) {
         Optional<Device> device = deviceRepository.findByDevId(deviceId);
 
@@ -170,7 +210,7 @@ public class DeviceGroupService {
             return DeviceInfoResponseDto.builder()
                     .type("edge-device")
                     .devId(member.getDevId())
-                    .ncId(null)//device != null ? device.getNcId() : null)// 수정 필요 시 적용
+                    .ncId(device != null ? device.getNcId() : null)// 수정 필요 시 적용
                     .devEui(device != null ? device.getDevEui() : null)
                     .description(device != null ? device.getDescription() : null)
                     .build();

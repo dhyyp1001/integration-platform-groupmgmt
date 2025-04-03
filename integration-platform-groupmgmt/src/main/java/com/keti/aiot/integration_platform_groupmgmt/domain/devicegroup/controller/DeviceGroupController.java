@@ -1,7 +1,7 @@
 package com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.controller;
 
 import com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.dto.*;
-import com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.entity.DeviceGroup;
+import com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.filter.DeviceGroupSearchFilter;
 import com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.service.DeviceGroupService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -61,5 +61,15 @@ public class DeviceGroupController {
     @Operation(summary = "단말 그룹 목록 조회")// 평탄화 완료
     public ResponseEntity<Page<DeviceGroupResponseDto>> findAll(@ParameterObject Pageable pageable) {
         return ResponseEntity.ok(deviceGroupService.findAll(pageable));
+    }
+
+    @GetMapping("/search")
+    @Operation(summary = "단말 그룹 검색")
+    public ResponseEntity<Page<DeviceGroupResponseDto>> searchDeviceGroups(
+            @RequestParam DeviceGroupSearchFilter filter,
+            @RequestParam String keyword,
+            @ParameterObject Pageable pageable
+    ) {
+        return ResponseEntity.ok(deviceGroupService.searchDeviceGroups(filter, keyword, pageable));
     }
 }
