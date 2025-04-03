@@ -89,8 +89,12 @@ public class DeviceGroupService {
 
     @Transactional
     public void deleteAll(List<Long> groupIds) {
+
         for (Long groupId : groupIds) {
+            DeviceGroup group = deviceGroupRepository.findById(groupId)
+                    .orElseThrow(() -> new IllegalArgumentException("그룹을 찾을 수 없습니다."));
             delete(groupId); // 기존 단일 삭제 로직 재사용
+            sendKafka("DELETE",group );
         }
     }
 
@@ -218,26 +222,32 @@ public class DeviceGroupService {
     }
 
     private void sendKafka(String eventType, DeviceGroup group) {
-        List<DeviceGroupMember> members = memberRepository.findByDeviceGroup_GroupId(group.getGroupId());
-        List<DeviceInfoResponseDto> devices = members.stream()
-                .map(this::mapToDeviceInfo)
-                .collect(Collectors.toList());
 
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("groupId", group.getGroupId());
-        payload.put("groupName", group.getGroupName());
-        payload.put("description", group.getDescription());
-        payload.put("createdAt", group.getCreatedAt());
-        payload.put("updatedAt", group.getUpdatedAt());
-        payload.put("members", devices);
+        try{
+            List<DeviceGroupMember> members = memberRepository.findByDeviceGroup_GroupId(group.getGroupId());
+            List<DeviceInfoResponseDto> devices = members.stream()
+                    .map(this::mapToDeviceInfo)
+                    .collect(Collectors.toList());
 
-        kafkaTemplate.send(
-                MessageBuilder.withPayload(payload)
-                        .setHeader(KafkaHeaders.TOPIC, TOPIC)
-                        .setHeader("eventType", eventType)
-                        .build()
-        );
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("groupId", group.getGroupId());
+            payload.put("groupName", group.getGroupName());
+            payload.put("description", group.getDescription());
+            payload.put("createdAt", group.getCreatedAt());
+            payload.put("updatedAt", group.getUpdatedAt());
+            payload.put("members", devices);
 
-        log.info("[Kafka] {} 메시지 전송 완료 - groupId={}, members={}개", eventType, group.getGroupId(), devices.size());
+            kafkaTemplate.send(
+                    MessageBuilder.withPayload(payload)
+                            .setHeader(KafkaHeaders.TOPIC, TOPIC)
+                            .setHeader("eventType", eventType)
+                            .build()
+            );
+
+            log.info("[Kafka] {} 메시지 전송 완료 - groupId={}, members={}개", eventType, group.getGroupId(), devices.size());
+        } catch (IllegalArgumentException e) {
+            log.warn("[Kafka Send Skipped] IllegalArgumentException 발생. groupId={}, message={}",
+                    group != null ? group.getGroupId() : "null", e.getMessage());
+        }
     }
 }

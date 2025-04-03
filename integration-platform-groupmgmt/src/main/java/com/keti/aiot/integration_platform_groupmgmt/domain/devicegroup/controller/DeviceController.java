@@ -4,6 +4,7 @@ import com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.dto.Devic
 import com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.dto.DeviceSearchCondition;
 import com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.entity.Device;
 import com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.service.DeviceService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -23,6 +24,7 @@ public class DeviceController {
     private final DeviceService deviceService;
 
     @GetMapping("/search")
+    @Operation(summary = "단말 목록조회")
     public ResponseEntity<Page<DeviceResponseDto>> searchDevices(
             @ParameterObject @ModelAttribute DeviceSearchCondition condition,
             @ParameterObject Pageable pageable
