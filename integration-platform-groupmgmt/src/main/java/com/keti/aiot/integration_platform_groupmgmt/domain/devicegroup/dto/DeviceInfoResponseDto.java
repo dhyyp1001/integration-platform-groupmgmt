@@ -1,5 +1,6 @@
 package com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.dto;
 
+import jakarta.persistence.Column;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -22,4 +23,6 @@ public class DeviceInfoResponseDto {
     private Boolean hasMobillity;
     private Integer priorityNum;
     private LocalDateTime lastSeen;
+    private String appId;
+    private String aapEui;
 }

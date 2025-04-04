@@ -24,6 +24,12 @@ public class Device {
     @Column(name = "nc_id", length = 34)
     private String ncId;
 
+    @Column(name = "app_id", length = 34)
+    private String appId;
+
+    @Column(name = "app_eui", length = 34)
+    private String aapEui;
+
     @Column(name = "description", length = 4000)
     private String description;
 
