@@ -1,6 +1,10 @@
 package com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -8,7 +12,15 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class DeviceGroupRequestDto {
+
+    @NotBlank
     private String groupName;
+
     private String description;
-    //private String status;
+
+//    @NotBlank
+//    private String status;
+
+    @NotEmpty
+    private List<String> deviceIds; // dev_id 또는 nc_id (type 기반 매핑)
 }

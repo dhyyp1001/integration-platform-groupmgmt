@@ -38,7 +38,7 @@ public class DeviceGroupService {
     private static final String TOPIC = "aiot.network.management.device-group";
 
     @Transactional
-    public String create(DeviceGroupCreateRequestDto request) {
+    public String create(DeviceGroupRequestDto request) {
 
         // 가장 마지막 번호 가져오기
         Integer lastNumber = deviceGroupRepository.findMaxGroupIdNumber();
@@ -67,7 +67,7 @@ public class DeviceGroupService {
     }
 
     @Transactional
-    public void update(Long dgpId, DeviceGroupUpdateRequestDto request) {
+    public void update(Long dgpId, DeviceGroupRequestDto request) {
         DeviceGroup group = deviceGroupRepository.findById(dgpId)
                 .orElseThrow(() -> new NotFoundException("해당 ID의 단말 그룹이 존재하지 않습니다."));
 
@@ -120,6 +120,7 @@ public class DeviceGroupService {
         return DeviceGroupResponseDto.builder()
                 .dgpId(group.getDgpId())
                 .groupName(group.getGroupName())
+                .groupId(group.getGroupId())
                 .description(group.getDescription())
                 //.status(group.getStatus())
                 .createdAt(group.getCreatedAt())
@@ -141,6 +142,7 @@ public class DeviceGroupService {
                     return DeviceGroupResponseDto.builder()
                             .dgpId(group.getDgpId())
                             .groupName(group.getGroupName())
+                            .groupId(group.getGroupId())
                             .description(group.getDescription())
                             .createdAt(group.getCreatedAt())
                             .updatedAt(group.getUpdatedAt())
@@ -165,6 +167,8 @@ public class DeviceGroupService {
             default -> throw new NotFoundException("[SEARCH] 지원하지 않는 필터입니다.");
         }
 
+        log.info("검색 필터: {}, 키워드: {}", filter, keyword);
+
         return result.map(group -> {
             List<DeviceInfoResponseDto> devices = memberRepository.findByDeviceGroup_DgpId(group.getDgpId())
                     .stream()
@@ -174,6 +178,7 @@ public class DeviceGroupService {
             return DeviceGroupResponseDto.builder()
                     .dgpId(group.getDgpId())
                     .groupName(group.getGroupName())
+                    .groupId(group.getGroupId())
                     .description(group.getDescription())
                     .createdAt(group.getCreatedAt())
                     .updatedAt(group.getUpdatedAt())
@@ -237,9 +242,8 @@ public class DeviceGroupService {
             Map<String, Object> payload = new HashMap<>();
             payload.put("dgpId", group.getDgpId());
             payload.put("groupName", group.getGroupName());
+            payload.put("groupId", group.getGroupId());
             payload.put("description", group.getDescription());
-            payload.put("createdAt", group.getCreatedAt());
-            payload.put("updatedAt", group.getUpdatedAt());
             payload.put("members", devices);
 
             kafkaTemplate.send(
@@ -256,6 +260,8 @@ public class DeviceGroupService {
         } catch (NotFoundException e){
             log.warn("[Kafka Send Skipped] NotFoundException 발생. dgpId={}, message={}",
                     group != null ? group.getDgpId() : "null", e.getMessage());
+        } catch (Exception e){
+            log.warn("exception kafka send skipped");
         }
     }
 }

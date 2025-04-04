@@ -1,4 +1,4 @@
-package com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.kafka;
+/*package com.keti.aiot.integration_platform_groupmgmt.domain.devicegroup.kafka;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,4 +18,4 @@ public class DeviceGroupProducer {
         kafkaTemplate.send(TOPIC, payload);
         log.info("[Kafka Produce] {} → {}", eventType, payload);
     }
-}
+}*/

@@ -25,14 +25,14 @@ public class DeviceGroupController {
 
     @PostMapping
     @Operation(summary = "단말 그룹 생성")
-    public ResponseEntity<String> create(@Validated @RequestBody DeviceGroupCreateRequestDto request) {
+    public ResponseEntity<String> create(@Validated @RequestBody DeviceGroupRequestDto request) {
         return ResponseEntity.ok(deviceGroupService.create(request));
     }
 
     @PutMapping("/{dgpId}")
     @Operation(summary = "단말 그룹 수정")
     public ResponseEntity<Void> update(@PathVariable Long dgpId,
-                                       @Validated @RequestBody DeviceGroupUpdateRequestDto request) {
+                                       @Validated @RequestBody DeviceGroupRequestDto request) {
         deviceGroupService.update(dgpId, request);
         return ResponseEntity.ok().build();
     }

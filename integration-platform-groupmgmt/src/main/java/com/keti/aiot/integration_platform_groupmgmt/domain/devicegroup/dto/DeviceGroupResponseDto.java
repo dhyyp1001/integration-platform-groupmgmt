@@ -12,6 +12,7 @@ import java.util.List;
 @Builder
 public class DeviceGroupResponseDto {
     private Long dgpId;
+    private String groupId;
     private String groupName;
     private String description;
     //private String status;

@@ -39,3 +39,4 @@ out/
 ### VS Code ###
 .vscode/
 
+/src/main/java/com/keti/aiot/integration_platform_groupmgmt/domain/devicegroup/entity/
