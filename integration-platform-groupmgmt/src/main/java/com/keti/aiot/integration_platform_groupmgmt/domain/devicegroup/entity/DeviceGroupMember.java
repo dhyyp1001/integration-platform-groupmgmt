@@ -8,7 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "device_group_member")
+@Table(name = "tb_aiot_device_group_member")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,11 +19,6 @@ public class DeviceGroupMember {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dgpId", nullable = false)
-    @JsonBackReference //자식에서 부모는 직렬화 불가
-    private DeviceGroup deviceGroup;
 
     @Column(name = "type", nullable = false, length = 20)
     private String type;
@@ -38,12 +33,8 @@ public class DeviceGroupMember {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    // 디바이스 정보 연동 (읽기 전용)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "nc_id", referencedColumnName = "nc_id", insertable = false, updatable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    private Device deviceByNcId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dev_id", referencedColumnName = "dev_id", insertable = false, updatable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    private Device deviceByDevId;
+    @JoinColumn(name = "dgpId", nullable = false)
+    @JsonBackReference //자식에서 부모는 직렬화 불가
+    private DeviceGroup deviceGroup;
 }

@@ -189,29 +189,29 @@ public class DeviceGroupService {
 
 
     private DeviceGroupMember buildMember(DeviceGroup group, String deviceId) {
-        Optional<Device> device = deviceRepository.findByDevId(deviceId);
+        Device device = deviceRepository.findByDevId(deviceId).orElseThrow(
+                () -> new NotFoundException("존재하지 않는 단말입니다."));
 
-        if (device.isPresent()) {
+        if (device.getNcId() == null) {
             return DeviceGroupMember.builder()
                     .deviceGroup(group)
                     .type("edge-device")
-                    .devId(device.get().getDevId())
+                    .devId(device.getDevId())
                     .build();
         }
-
-        Device ncDevice = deviceRepository.findByNcId(deviceId)
-                .orElseThrow(() -> new NotFoundException("존재하지 않는 단말입니다."));
 
         return DeviceGroupMember.builder()
                 .deviceGroup(group)
                 .type("device")
-                .ncId(ncDevice.getNcId())
+                .devId(device.getDevId())
+                .ncId(device.getNcId())
                 .build();
     }
 
     private DeviceInfoResponseDto mapToDeviceInfo(DeviceGroupMember member) {
         if ("device".equals(member.getType())) {
-            Device device = member.getDeviceByNcId();
+            Device device = (deviceRepository.findByNcId(member.getNcId()))
+                    .orElseThrow(() -> new RuntimeException("Device not found"));;
             return DeviceInfoResponseDto.builder()
                     .type("device")
                     .devId(null)
@@ -220,7 +220,8 @@ public class DeviceGroupService {
                     .description(device != null ? device.getDescription() : null)
                     .build();
         } else {
-            Device device = member.getDeviceByDevId();
+            Device device = deviceRepository.findByDevId(member.getDevId())
+                    .orElseThrow(() -> new RuntimeException("Device not found"));
             return DeviceInfoResponseDto.builder()
                     .type("edge-device")
                     .devId(member.getDevId())

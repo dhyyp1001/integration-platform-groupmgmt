@@ -35,8 +35,8 @@ out/
 
 ### 개인정보파일 ###
 /src/main/resources/application.yml
+/src/main/resources/application-local.yml
+/src/main/resources/application-prod.yml
 
 ### VS Code ###
 .vscode/
-
-/src/main/java/com/keti/aiot/integration_platform_groupmgmt/domain/devicegroup/entity/

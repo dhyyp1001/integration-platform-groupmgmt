@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "device_group")
+@Table(name = "tb_aiot_device_group")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,14 +26,11 @@ public class DeviceGroup {
     @Column(name = "group_id", length = 100, unique = true)
     private String groupId;
 
-    @Column(name = "group_name", length = 100, nullable = false, unique = true)
+    @Column(name = "group_name", length = 100, nullable = false)
     private String groupName;
 
     @Column(columnDefinition = "TEXT")
     private String description;
-
-    //@Column(length = 20)
-    //private String status;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
